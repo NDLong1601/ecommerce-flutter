@@ -1,8 +1,38 @@
+import 'package:ecommerce_mobile_app/di/injector.dart';
+import 'package:ecommerce_mobile_app/firebase_options.dart';
 import 'package:ecommerce_mobile_app/router/app_router.dart';
+import 'package:ecommerce_mobile_app/services/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    // Initialize Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    // Configure dependencies
+    await configureDependencies();
+
+    // Initialize notification service
+    final notificationService = getIt<NotificationService>();
+    await notificationService.initialize();
+
+    // Initialize remote config service
+    try {
+      final remoteConfigService = getIt<RemoteConfigService>();
+      await remoteConfigService.initialize();
+    } catch (e) {
+      debugPrint('Remote Config initialization failed: $e');
+    }
+  } catch (e) {
+    debugPrint('App initialization failed: $e');
+  }
+
   runApp(const MyApp());
 }
 
